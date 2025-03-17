@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Do You Love Me? - Inside a Rotating Starfield</title>
   <!-- 引入字体 -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
   <style>
     /* 全局背景与初始星空 */
@@ -13,7 +13,7 @@
       padding: 0;
       background: radial-gradient(circle at 50% 50%, #000, #0a0a0a, #050505);
       overflow: hidden;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Noto Sans SC', 'Montserrat', sans-serif;
       color: #fff;
       text-align: center;
       height: 100vh;
@@ -97,6 +97,7 @@
     .animation-overlay.active {
       opacity: 1;
     }
+    /* 表白文字及动画效果 */
     .love-text {
       position: absolute;
       top: 30%;
@@ -111,6 +112,9 @@
     }
     .fade-in {
       opacity: 1;
+    }
+    .fade-out {
+      opacity: 0;
     }
     /* Canvas 用于绘制 3D 星场 */
     #galaxyCanvas {
@@ -177,6 +181,8 @@
     <div id="supernova" class="supernova"></div>
     <div id="loveText" class="love-text"></div>
   </div>
+  <!-- 背景音乐 -->
+  <audio id="bgmAudio" src="bgm.mp3"></audio>
   <script>
     /* ----------------- 初始化 No 按钮位置 ----------------- */
     function initNoPosition() {
@@ -185,7 +191,7 @@
       // 获取 yes 按钮的位置信息
       const rectYes = yesBtn.getBoundingClientRect();
       // 设置 no 按钮的初始位置为 yes 按钮正下方 10px
-      const newX = rectYes.left + rectYes.width/2 - noBtn.offsetWidth/2;
+      const newX = rectYes.left + rectYes.width / 2 - noBtn.offsetWidth / 2;
       const newY = rectYes.bottom + 10;
       noBtn.style.left = newX + 'px';
       noBtn.style.top = newY + 'px';
@@ -212,25 +218,51 @@
       noBtn.style.top = newY + 'px';
     });
     
-    /* ----------------- 表白文字轮播 ----------------- */
-    const messages = [
-      "You are the shining star in my night sky.",
-      "Every moment with you is a cosmic miracle.",
-      "My love for you spans the universe.",
-      "Together, we create a dazzling galaxy of love."
+    /* ----------------- 歌词及淡入淡出效果 ----------------- */
+    const lyrics = [
+      { time: 2, text: "Being with you and not being with you is the only way I have to measure time." },
+      { time: 19.5, text: "Heart beats fast" },
+      { time: 23.5, text: "Colors and promises" },
+      { time: 28.5, text: "How to be brave" },
+      { time: 31, text: "How can I love when I'm afraid to fall" },
+      { time: 38.5, text: "But watching you stand alone" },
+      { time: 44, text: "All of my doubt suddenly goes away somehow" },
+      { time: 53, text: "One step closer" },
+      { time: 61, text: "I have died everyday waiting for you" },
+      { time: 66, text: "Darling don't be afraid" },
+      { time: 68.5, text: "I have loved you for a thousand years" },
+      { time: 75, text: "I'll love you for a thousand more" },
+      { time: 86.8, text: "Time stands still" },
+      { time: 90.5, text: "Beauty in all she is" },
+      { time: 95.5, text: "I will be brave" },
+      { time: 98, text: "I will not let anything take away" },
+      { time: 106, text: "What's standing in front of me" },
+      { time: 111, text: "Every breath" },
+      { time: 114, text: "Every hour has come to this" },
+      { time: 120, text: "One step closer" },
+      { time: 128, text: "I have died everyday waiting for you" },
+      { time: 133, text: "Darling don't be afraid" },
+      { time: 135.5, text: "I have loved you for a thousand years" },
+      { time: 142, text: "I'll love you for a thousand more" },
+      { time: 148.5, text: "And all along I believed I would find you" },
+      { time: 154, text: "Time has brought your heart to me" },
+      { time: 156.5, text: "I have loved you for a thousand years" },
+      { time: 163, text: "I'll love you for a thousand more" },
+      { time: 193, text: "One step closer..." },
+      { time: 203, text: "One step closer!" },
+      { time: 211, text: "I have died everyday waiting for you" },
+      { time: 216, text: "Darling don't be afraid" },
+      { time: 218.5, text: "I have loved you for a thousand years" },
+      { time: 225, text: "I'll love you for a thousand more" },
+      { time: 231.5, text: "And all along I believed I would find you" },
+      { time: 236.5, text: "Time has brought your heart to me" },
+      { time: 239.5, text: "I have loved you for a thousand years" },
+      { time: 246, text: "I'll love you for a thousand more" }
     ];
-    let messageIndex = 0;
-    const loveText = document.getElementById('loveText');
-    function cycleMessages() {
-      loveText.classList.remove('fade-in');
-      setTimeout(() => {
-        loveText.textContent = messages[messageIndex];
-        loveText.classList.add('fade-in');
-        messageIndex = (messageIndex + 1) % messages.length;
-      }, 1000);
-    }
     
-    /* ----------------- 3D 星场效果（置身其中） ----------------- */
+    const loveText = document.getElementById('loveText');
+
+    /* ----------------- 3D 星场效果 ----------------- */
     const canvas = document.getElementById('galaxyCanvas');
     const ctx = canvas.getContext('2d');
     let width, height, cx, cy;
@@ -382,10 +414,29 @@
       document.getElementById('noBtn').style.display = 'none';
       const animationOverlay = document.getElementById('animationOverlay');
       animationOverlay.classList.add('active');
-      cycleMessages();
-      setInterval(cycleMessages, 4000);
       startFieldAnimation();
       launchMeteor();
+      // 播放背景音乐
+      const bgm = document.getElementById('bgmAudio');
+      bgm.play();
+      // 根据音频播放时间更新歌词，添加淡出淡入效果
+      bgm.addEventListener('timeupdate', () => {
+        const currentTime = bgm.currentTime;
+        for (let i = lyrics.length - 1; i >= 0; i--) {
+          if (currentTime >= lyrics[i].time) {
+            if (loveText.textContent !== lyrics[i].text) {
+              loveText.classList.remove('fade-in');
+              loveText.classList.add('fade-out');
+              setTimeout(() => {
+                loveText.textContent = lyrics[i].text;
+                loveText.classList.remove('fade-out');
+                loveText.classList.add('fade-in');
+              }, 1000); // 此处时间需与 CSS transition 时间一致
+            }
+            break;
+          }
+        }
+      });
     });
   </script>
 </body>
