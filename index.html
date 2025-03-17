@@ -268,11 +268,11 @@
     let width, height, cx, cy;
     let starFieldRotation = 0;
     // 生成大量星星分布在一个大球体内（体积星场）
-    const numFieldStars = 3500;
+    const numFieldStars = 4000;
     let fieldStars = [];
     const fieldRadius = 900; // 星场半径
     // 摄像机位置（你所在的位置），设为 {x:0, y:0, z:200}
-    const camera = { x: 0, y: 0, z: -250 };
+    const camera = { x: 0, y: 0, z: -50 };
     
     function generateStarField() {
       fieldStars.length = 0;
@@ -282,7 +282,7 @@
         const theta = 2 * Math.PI * u;
         const phi = Math.acos(2 * v - 1);
         // 使用 Math.pow 来使得星点分布更集中在中心
-        const r = fieldRadius * Math.pow(Math.random(), 1/1.2);
+        const r = fieldRadius * Math.pow(Math.random(), 1/1.5);
         const x = r * Math.sin(phi) * Math.cos(theta);
         const y = r * Math.sin(phi) * Math.sin(theta);
         const z = r * Math.cos(phi);
