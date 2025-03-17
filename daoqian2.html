@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Do You Love Me? - Inside a Rotating Starfield</title>
+  <!-- 引入字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    /* 全局背景与初始星空 */
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at 50% 50%, #000, #0a0a0a, #050505);
+      overflow: hidden;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff;
+      text-align: center;
+      height: 100vh;
+      position: relative;
+    }
+    /* 生成背景星空（小星点） */
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: twinkle 2s infinite ease-in-out;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 0.2; }
+    }
+    /* 主界面容器（包含标题和 Yes 按钮） */
+    .container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 30;
+      transition: opacity 3s ease;
+    }
+    .container.fade-out {
+      opacity: 0;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    }
+    /* 按钮公共样式 */
+    .btn {
+      padding: 15px 40px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+    .btn:active {
+      transform: scale(0.95);
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+    /* Yes 按钮美化 */
+    .btn-yes {
+      background: linear-gradient(135deg, #1E90FF, #00BFFF);
+      color: #fff;
+    }
+    /* 独立的 No 按钮，美化且确保显示在最上层 */
+    .btn-no {
+      background: linear-gradient(135deg, #666, #444);
+      color: #fff;
+      position: fixed;
+      z-index: 50;
+      transition: transform 0.3s ease;
+    }
+    .btn-no:active {
+      transform: none !important;
+    }
+    /* 动画层：包含 3D 星场、流星、表白文字 */
+    .animation-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 3s ease;
+    }
+    .animation-overlay.active {
+      opacity: 1;
+    }
+    .love-text {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5em;
+      font-family: 'Great Vibes', cursive;
+      z-index: 25;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      text-shadow: 0 0 10px #fff, 0 0 20px #ff5e99, 0 0 30px #ff5e99;
+    }
+    .fade-in {
+      opacity: 1;
+    }
+    /* Canvas 用于绘制 3D 星场 */
+    #galaxyCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 15;
+    }
+    /* 超新星效果（保留） */
+    .supernova {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: supernovaAnimation 3s ease-out forwards;
+      z-index: 20;
+    }
+    @keyframes supernovaAnimation {
+      0% { width: 0; height: 0; opacity: 1; }
+      50% { width: 300px; height: 300px; opacity: 0.8; }
+      100% { width: 600px; height: 600px; opacity: 0; }
+    }
+    /* 流星基础样式 */
+    .meteor {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+      border-radius: 50%;
+      opacity: 0.8;
+      z-index: 18;
+    }
+  </style>
+</head>
+<body>
+  <!-- 生成背景星空 -->
+  <script>
+    const numStars = 150;
+    for (let i = 0; i < numStars; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      const size = Math.random() * 2;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDuration = 2 + Math.random() * 3 + 's';
+      document.body.appendChild(star);
+    }
+  </script>
+  <!-- 主界面容器（包含标题和 Yes 按钮） -->
+  <div class="container" id="mainContainer">
+    <h1>Do You Love Me?</h1>
+    <button class="btn btn-yes" id="yesBtn" type="button">Yes</button>
+  </div>
+  <!-- 独立的 No 按钮 -->
+  <button class="btn btn-no" id="noBtn" type="button">No</button>
+  <!-- 动画层 -->
+  <div id="animationOverlay" class="animation-overlay">
+    <canvas id="galaxyCanvas"></canvas>
+    <div id="supernova" class="supernova"></div>
+    <div id="loveText" class="love-text"></div>
+  </div>
+  <script>
+    /* ----------------- 初始化 No 按钮位置 ----------------- */
+    function initNoPosition() {
+      const yesBtn = document.getElementById('yesBtn');
+      const noBtn = document.getElementById('noBtn');
+      // 获取 yes 按钮的位置信息
+      const rectYes = yesBtn.getBoundingClientRect();
+      // 设置 no 按钮的初始位置为 yes 按钮正下方 10px
+      const newX = rectYes.left + rectYes.width/2 - noBtn.offsetWidth/2;
+      const newY = rectYes.bottom + 10;
+      noBtn.style.left = newX + 'px';
+      noBtn.style.top = newY + 'px';
+    }
+    // 初始化时延迟执行，确保 yes 按钮渲染完毕
+    window.addEventListener('load', initNoPosition);
+    
+    /* ----------------- No 按钮移动控制 ----------------- */
+    const noBtn = document.getElementById('noBtn');
+    noBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const rect = noBtn.getBoundingClientRect();
+      const btnWidth = rect.width;
+      const btnHeight = rect.height;
+      const maxX = window.innerWidth - btnWidth;
+      const maxY = window.innerHeight - btnHeight;
+      let newX = Math.floor(Math.random() * (maxX + 1));
+      let newY = Math.floor(Math.random() * (maxY + 1));
+      // 限制在 [0, maxX] 和 [0, maxY] 内
+      newX = Math.max(0, Math.min(newX, maxX));
+      newY = Math.max(0, Math.min(newY, maxY));
+      console.log("New pos:", newX, newY, "Max:", maxX, maxY);
+      noBtn.style.left = newX + 'px';
+      noBtn.style.top = newY + 'px';
+    });
+    
+    /* ----------------- 表白文字轮播 ----------------- */
+    const messages = [
+      "You are the shining star in my night sky.",
+      "Every moment with you is a cosmic miracle.",
+      "My love for you spans the universe.",
+      "Together, we create a dazzling galaxy of love."
+    ];
+    let messageIndex = 0;
+    const loveText = document.getElementById('loveText');
+    function cycleMessages() {
+      loveText.classList.remove('fade-in');
+      setTimeout(() => {
+        loveText.textContent = messages[messageIndex];
+        loveText.classList.add('fade-in');
+        messageIndex = (messageIndex + 1) % messages.length;
+      }, 1000);
+    }
+    
+    /* ----------------- 3D 星场效果（置身其中） ----------------- */
+    const canvas = document.getElementById('galaxyCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, cx, cy;
+    let starFieldRotation = 0;
+    // 生成大量星星分布在一个大球体内（体积星场）
+    const numFieldStars = 2000;
+    let fieldStars = [];
+    const fieldRadius = 1000; // 星场半径
+    // 摄像机位置（你所在的位置），设为 {x:0, y:0, z:200}
+    const camera = { x: 0, y: 0, z: -600 };
+    
+    function generateStarField() {
+      fieldStars.length = 0;
+      for (let i = 0; i < numFieldStars; i++) {
+        const u = Math.random();
+        const v = Math.random();
+        const theta = 2 * Math.PI * u;
+        const phi = Math.acos(2 * v - 1);
+        // 使用 Math.pow 来使得星点分布更集中在中心
+        const r = fieldRadius * Math.pow(Math.random(), 1/1.3);
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = r * Math.sin(phi) * Math.sin(theta);
+        const z = r * Math.cos(phi);
+        const size = Math.random() * 1.5 + 0.5;
+        const brightness = Math.random() * 0.5 + 0.5;
+        fieldStars.push({ x, y, z, size, brightness });
+      }
+    }
+    
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      cx = width / 2;
+      cy = height / 2;
+      generateStarField();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    // 绘制星场：将整个星场绕 Y 轴旋转，利用透视投影将 3D 星点绘制到屏幕上
+    function drawStarField() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.save();
+      // 绕 Y 轴旋转整个星场
+      starFieldRotation += 0.001;
+      const cosA = Math.cos(starFieldRotation);
+      const sinA = Math.sin(starFieldRotation);
+      const focalLength = 800;
+      for (let star of fieldStars) {
+        // 绕 Y 轴旋转： x' = x*cosA + z*sinA, z' = -x*sinA + z*cosA, y 不变
+        const xRot = star.x * cosA + star.z * sinA;
+        const yRot = star.y;
+        const zRot = -star.x * sinA + star.z * cosA;
+        // 相对于摄像机
+        const relX = xRot - camera.x;
+        const relY = yRot - camera.y;
+        const relZ = zRot - camera.z;
+        if (focalLength + relZ <= 0) continue;
+        // 透视投影
+        const scale = focalLength / (focalLength + relZ);
+        const screenX = cx + relX * scale;
+        const screenY = cy + relY * scale;
+        const starSize = star.size * scale;
+        if (starSize <= 0) continue;
+        const gradient = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, starSize);
+        let starColor;
+        const rand = Math.random();
+        if(rand < 0.7) starColor = `rgba(255,255,255,${star.brightness})`;
+        else if(rand < 0.85) starColor = `rgba(200,220,255,${star.brightness})`;
+        else starColor = `rgba(255,220,200,${star.brightness})`;
+        gradient.addColorStop(0, starColor);
+        gradient.addColorStop(1, `rgba(255,255,255,0)`);
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, starSize, 0, 2 * Math.PI);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      }
+      ctx.restore();
+      requestAnimationFrame(drawStarField);
+    }
+    
+    let fieldAnimationStarted = false;
+    function startFieldAnimation() {
+      if (!fieldAnimationStarted) {
+        fieldAnimationStarted = true;
+        drawStarField();
+      }
+    }
+    
+    /* ----------------- 流星效果 ----------------- */
+    function createMeteor() {
+      const meteor = document.createElement('div');
+      meteor.classList.add('meteor');
+      const meteorLength = 40 + Math.random() * 30;
+      meteor.style.width = meteorLength + 'px';
+      const fromTop = Math.random() < 0.5;
+      let startX, startY, angle;
+      if (fromTop) {
+        startX = Math.random() * window.innerWidth;
+        startY = -20;
+        // 角度固定在 60° ±15°（从顶部）
+        angle = 60 + (Math.random() - 0.5) * 30;
+      } else {
+        startX = window.innerWidth + 20;
+        startY = Math.random() * window.innerHeight;
+        // 角度固定在 120° ±15°（从右侧）
+        angle = 120 + (Math.random() - 0.5) * 30;
+      }
+      meteor.style.left = startX + 'px';
+      meteor.style.top = startY + 'px';
+      // 设置 transform-origin 为元素左侧中点
+      meteor.style.transformOrigin = "0 50%";
+      const distance = 300 + Math.random() * 300;
+      const duration = 1.5 + Math.random() * 1.5;
+      meteor.style.transition = `transform ${duration}s linear, opacity ${duration}s linear`;
+      meteor.style.transform = `rotate(${angle}deg)`;
+      const animationOverlay = document.getElementById('animationOverlay');
+      animationOverlay.appendChild(meteor);
+      meteor.getBoundingClientRect();
+      meteor.style.transform = `rotate(${angle}deg) translate(${distance}px, 0)`;
+      meteor.style.opacity = 0;
+      setTimeout(() => { meteor.remove(); }, duration * 1000);
+    }
+    
+    function launchMeteor() {
+      createMeteor();
+      const delay = 1000 + Math.random() * 2000;
+      setTimeout(launchMeteor, delay);
+    }
+    
+    /* ----------------- 键盘控制视角 ----------------- */
+    document.addEventListener('keydown', (e) => {
+      const step = 50;
+      if(e.key === 'ArrowUp') { camera.y -= step; }
+      else if(e.key === 'ArrowDown') { camera.y += step; }
+      else if(e.key === 'ArrowLeft') { camera.x -= step; }
+      else if(e.key === 'ArrowRight') { camera.x += step; }
+    });
+    
+    /* ----------------- 点击 Yes 启动所有效果 ----------------- */
+    const yesBtn = document.getElementById('yesBtn');
+    yesBtn.addEventListener('click', function() {
+      console.log("Yes button clicked!");
+      const mainContainer = document.getElementById('mainContainer');
+      mainContainer.classList.add('fade-out');
+      // 点击 Yes 后隐藏主界面及按钮
+      mainContainer.style.display = 'none';
+      document.getElementById('noBtn').style.display = 'none';
+      const animationOverlay = document.getElementById('animationOverlay');
+      animationOverlay.classList.add('active');
+      cycleMessages();
+      setInterval(cycleMessages, 4000);
+      startFieldAnimation();
+      launchMeteor();
+    });
+  </script>
+</body>
+</html>
