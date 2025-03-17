@@ -282,7 +282,7 @@
         const theta = 2 * Math.PI * u;
         const phi = Math.acos(2 * v - 1);
         // 使用 Math.pow 来使得星点分布更集中在中心
-        const r = fieldRadius * Math.pow(Math.random(), 1/1.5);
+        const r = fieldRadius * Math.pow(Math.random(), 1/1.2);
         const x = r * Math.sin(phi) * Math.cos(theta);
         const y = r * Math.sin(phi) * Math.sin(theta);
         const z = r * Math.cos(phi);
