@@ -128,20 +128,47 @@
       position: fixed;
       top: 50%;
       left: 50%;
-      width: 0;
-      height: 0;
+      width: 1000px;
+      height: 1000px;
       background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%);
       border-radius: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scale(0);
+      will-change: transform, opacity;
       z-index: 20;
     }
-    @keyframes supernovaAnimation {
+    /* @keyframes supernovaAnimation {
       0% { width: 0; height: 0; opacity: 1; }
-      50% { width: 700px; height: 700px; opacity: 0.8; }
-      100% { width: 1500px; height: 1500px; opacity: 0; }
+      40% { width: 500px; height: 500px; opacity: 0.95;}
+      100% { width: 2800px; height: 2800px; opacity: 0; }
+    } */
+    @keyframes supernovaAnimation {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+      }
+      10% {
+        transform: translate(-50%, -50%) scale(0.1);
+        opacity: 0.98;
+      }
+      25% {
+        transform: translate(-50%, -50%) scale(0.4);
+        opacity: 0.95;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0.5;
+      }
+      75% {
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0.3;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(6);
+        opacity: 0;
+      }
     }
     .supernovaAnimation {
-      animation: supernovaAnimation 1.5s ease-out forwards;
+      animation: supernovaAnimation 1.3s cubic-bezier(0, 0, 1, 1) forwards;
     }
     /* 流星基础样式 */
     .meteor {
@@ -178,9 +205,10 @@
   <!-- 独立的 No 按钮 -->
   <button class="btn btn-no" id="noBtn" type="button">才不</button>
   <!-- 动画层 -->
+  <div id="supernova" class="supernova"></div>
   <div id="animationOverlay" class="animation-overlay">
     <canvas id="galaxyCanvas"></canvas>
-    <div id="supernova" class="supernova"></div>
+    <!-- <div id="supernova" class="supernova"></div> -->
     <div id="loveText" class="love-text"></div>
   </div>
   <!-- 背景音乐 -->
@@ -420,17 +448,23 @@
       supernova.style.display = 'block'; // 显示超新星
       setTimeout(() => {
         supernova.classList.add('supernovaAnimation');
-      }, 10); // 延迟一点时间启动动画，确保超新星可以显示出来
+      }, 100); // 延迟一点时间启动动画，确保超新星可以显示出来
 
 
 
       const animationOverlay = document.getElementById('animationOverlay');
-      animationOverlay.classList.add('active');
-      startFieldAnimation();
-      launchMeteor();
+      setTimeout(() => {
+        animationOverlay.classList.add('active');
+        startFieldAnimation();
+        launchMeteor();
+      }, 1200);
+
       // 播放背景音乐
       const bgm = document.getElementById('bgmAudio');
-      bgm.play();
+      setTimeout(() => {
+        bgm.play();
+      }, 500)
+      
       // 根据音频播放时间更新歌词，添加淡出淡入效果
       bgm.addEventListener('timeupdate', () => {
         const currentTime = bgm.currentTime;
